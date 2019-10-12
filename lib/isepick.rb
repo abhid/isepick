@@ -1,6 +1,8 @@
 require "isepick/version"
 require "faraday"
 require "nokogiri"
+require "json"
+require 'active_support/core_ext/hash'
 
 module Isepick
   class IseMNT
@@ -13,9 +15,20 @@ module Isepick
       end
     end
 
-    def get_all_endpoints(params*)
-      JSON.parse($ise_psn.get("endpoint", {pageSize: params[:pageSize], page: params[:page]}).body)["SearchResult"]
-      return endpoints_json["resources"]
+    def activeSessions(pageSize = 25, page = 1)
+      session_xml = Nokogiri::XML(@client.get("Session/ActiveList", {pageSize: pageSize, page: page}).body)
+      return Hash.from_xml(session_xml.to_s)
+    end
+
+    def session_filterByMAC(mac_addr)
+      filter_param = mac_addr.gsub(/[^a-fA-F0-9]/, "").upcase.gsub(/(.{2})(?=.)/, '\1:\2')
+      session_xml = Nokogiri::XML(@client.get("Session/MACAddress/#{filter_param}").body)
+      return Hash.from_xml(session_xml.to_s)
+    end
+
+    def session_filterByIP(ip_addr)
+      session_xml = Nokogiri::XML(@client.get("Session/EndPointIPAddress/#{ip_addr}").body)
+      return Hash.from_xml(session_xml.to_s)
     end
   end
 
@@ -27,6 +40,19 @@ module Isepick
         conn.ssl[:verify] = false
         conn.headers["Accept"] = "application/json"
       end
+    end
+
+    def ep_getAll(pageSize = 25, page = 1)
+      return JSON.parse(@client.get("endpoint").body)
+    end
+
+    def ep_get(ep_id)
+      return JSON.parse(@client.get("endpoint/#{ep_id}").body)
+    end
+
+    def ep_filterByMAC(mac_addr)
+      filter_param = mac_addr.gsub(/[^a-fA-F0-9]/, "").upcase.gsub(/(.{2})(?=.)/, '\1:\2')
+      return JSON.parse(@client.get("endpoint?filter=mac.EQ.#{filter_param}").body)
     end
   end
 end
