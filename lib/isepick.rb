@@ -41,7 +41,7 @@ module Isepick
         conn.headers["Accept"] = "application/json"
       end
     end
-
+    # Endpoints
     def ep_getAll(pageSize = 25, page = 1)
       return JSON.parse(@client.get("endpoint").body)
     end
@@ -53,6 +53,74 @@ module Isepick
     def ep_filterByMAC(mac_addr)
       filter_param = mac_addr.gsub(/[^a-fA-F0-9]/, "").upcase.gsub(/(.{2})(?=.)/, '\1:\2')
       return JSON.parse(@client.get("endpoint?filter=mac.EQ.#{filter_param}").body)
+    end
+
+    # Network Device Group
+    def ndg_getAll()
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("networkdevicegroup?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
+    end
+
+    # Endpoint Identity Group
+    def eig_getAll()
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("endpointgroup?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
+    end
+
+    # Downloadable ACL
+    def dacl_getAll()
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("downloadableacl?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
+    end
+
+    # Authorization Profile
+    def aznprofile_getAll()
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("authorizationprofile?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
     end
   end
 end
