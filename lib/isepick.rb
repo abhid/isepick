@@ -72,6 +72,23 @@ module Isepick
       return output
     end
 
+    # Network Device
+    def nd_getAll()
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("networkdevice?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
+    end
+
     # Endpoint Identity Group
     def eig_getAll()
       current_page = 1
@@ -106,6 +123,10 @@ module Isepick
       return output
     end
 
+    def dacl_get(uuid)
+      return JSON.parse(@client.get("downloadableacl/#{uuid}").body)
+    end
+
     # Authorization Profile
     def aznprofile_getAll()
       current_page = 1
@@ -121,6 +142,10 @@ module Isepick
         end
       end
       return output
+    end
+
+    def aznprofile_get(uuid)
+      return JSON.parse(@client.get("authorizationprofile/#{uuid}").body)
     end
   end
 end
