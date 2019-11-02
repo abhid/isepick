@@ -72,6 +72,10 @@ module Isepick
       return output
     end
 
+    def ndg_get(ndg_id)
+      return JSON.parse(@client.get("networkdevicegroup/#{ndg_id}").body)
+    end
+
     # Network Device
     def nd_getAll()
       current_page = 1
@@ -89,6 +93,10 @@ module Isepick
       return output
     end
 
+    def nd_get(nd_id)
+      return JSON.parse(@client.get("networkdevice/#{nd_id}").body)
+    end
+
     # Endpoint Identity Group
     def eig_getAll()
       current_page = 1
@@ -96,6 +104,26 @@ module Isepick
 
       loop do
         cur_output = JSON.parse(@client.get("endpointgroup?size=25&page=#{current_page}").body)
+        output += cur_output["SearchResult"]["resources"]
+        if cur_output["SearchResult"].key?("nextPage")
+          current_page += 1
+        else
+          break
+        end
+      end
+      return output
+    end
+
+    def eig_get(eig_id)
+      return JSON.parse(@client.get("endpointgroup/#{eig_id}").body)
+    end
+
+    def eig_getEndpoints(eig_id)
+      current_page = 1
+      output = []
+
+      loop do
+        cur_output = JSON.parse(@client.get("endpoint?size=25&page=#{current_page}&filter=groupId.EQ.#{eig_id}").body)
         output += cur_output["SearchResult"]["resources"]
         if cur_output["SearchResult"].key?("nextPage")
           current_page += 1
